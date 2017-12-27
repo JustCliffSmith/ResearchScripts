@@ -28,10 +28,8 @@ with open(sys.argv[1]) as f: #this method automatically closes the file
             elif (linelist[0] == 'atom' or linelist[0] == 'atom_frac') :
                 number_atoms += 1
                 elem = linelist[4]
-                if linelist[4] in species:
-                    species[elem] += 1
-                else:
-                    species[elem] = 1
+                species.setdefault(elem, 0)
+                species[elem] += 1
 
 print('Total: {}'.format(number_atoms))
 for atoms in species:

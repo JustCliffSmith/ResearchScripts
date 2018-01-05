@@ -8,9 +8,6 @@
 #This script reads an FHI-aims output file from  relaxation calculation 
 #and creates a last_geometry.in with the final relaxation step.
 
-#This script outputs the total number of atoms, and number per species in a 
-#FHI-aims input file. It has very basic error checking. 
-
 import sys
 
 
@@ -24,19 +21,24 @@ if len(sys.argv) != 2:
     sys.exit()
 
 record = False #flag to start recording geometry info to an output
+wrote = False #flag telling us if we wrote to the output file completely
 
 with open(sys.argv[1]) as f: #this method automatically closes the file
-  with open('last_geometry.in', 'w') as out:
-    for line in f:
-        linelist = line.split() #split the lines (str) into lists
-        if linelist: #checks if the line is entirely empty
-            if linelist[0] == 'Final' and linelist[1] == 'atomic':
-              record = True  
-            elif record == True and (linelist[0] == 'atom' or linelist[0] == 'lattice_vector'):
-              printcurrent(linelist, out)
+  for line in f:
+      linelist = line.split() #split the lines (str) into lists
+      if linelist: #checks if the line is entirely empty
+          if (linelist[0] == 'Final' and linelist[1] == 'atomic') or \
+              (linelist[0] == 'Updated' and linelist[1] == 'atomic'):
+            out = open('last_geometry.in', 'w')
+            record = True
+          elif record == True and \
+              (linelist[0] == 'atom' or linelist[0] == 'lattice_vector'):
+            printcurrent(linelist, out)
+          elif linelist[0] == 'Fractional':
+            record = False
+            wrote = True
+            out.close()
 
-
-if record == True:
+if wrote == True:
   print('Final geometry step outputed to last_geometry.in')
 
-#TODO generalize code for non-final output as the last output in the final (aborted run) 

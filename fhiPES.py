@@ -73,7 +73,7 @@ for files in os.listdir('.'):
 #subtract off the largest negative value
 z = np.subtract(z, np.amin(z))
 
-[print("x: {: 02.4f}, y: {: 02.4f}, z: {: 02.4f}".format(xi,yi,zi)) \ 
+[print("x: {: 02.4f}, y: {: 02.4f}, z: {: 02.4f}".format(xi,yi,zi)) \
       for (xi, yi, zi) in zip(x, y, z)]
 
 #define the grid dimensions

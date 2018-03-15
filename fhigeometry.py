@@ -58,7 +58,7 @@ with open(sys.argv[1]) as f:
             if atomCount in constraints:
               for cons in constraints[atomCount]:
                 printconstraint(cons, out)
-          elif linelist[0] == 'Fractional':
+          elif record == True and linelist[0] == 'Fractional':
             atomCount = 0
             record = False
             wrote = True

@@ -13,15 +13,10 @@ Requirements: Jmol 11.7 and later, Imagemagick
 """
 
 import os
-import sys
-import shutil as sh
 import subprocess
-import time
 
 def makeScript():
-  '''
-  Creates the jmol script file
-  '''
+  ''' Creates the jmol script file.'''
 
   with open('movie.jmol', 'w') as script:
     script.write('''frame 1 \n'''
@@ -32,43 +27,26 @@ def makeScript():
                  '''  frame next\n'''  
                  '''end for''')
 
-def createImage(text, sizeX, sizeY, outputDir, outputName):
-    """ Create square PNG image with white text and transparent background.
-    The specified font must already exist on the local computer.
 
-    source: http://danialgoodwin.com/blog/dev/dev-programmatically-generate-text-images-imagemagick-python/
-    Modified to remove output dir, hardcoded Windows path, and generalized size
-    """
-    if not os.path.exists(outputDir):
-        os.makedirs(outputDir)
-    subprocess.call(["convert",
-                     "-size", str(sizeX) + "x" + str(sizeY),
-                     "-background", "#000000",
-                     "-gravity", "center",
-                     "-fill", "white",
-                     "caption:" + text, 
-                     outputName + ".jpg"])
+main_dir = os.getcwd() #the root directory with all the iteration folders
 
-
-
-#Walk through the directories and run Jmol and ImageMagick in each
-#then move the resulting gif to the top level directory
+#Walk through the directories and collect run the xyz files into a master xyz
+# file. Run Jmol and ImageMagick to create the gif.
 for foldername, subfolders, filenames in os.walk('.'):
-  for folder in subfolders:
-    os.chdir(folder)
-    makeScript()
-    proc = subprocess.Popen(["jmol", "path.xyz -x -J movie.jmol"])
-    time.sleep(4)
-#    createImage(folder, 800, 600, ".", "movie")
-#    time.sleep(2)
-    subprocess.Popen("convert *.jpg " + folder +".gif", shell=True)
-    time.sleep(4)
-    sh.move(folder + '.gif', '..')
+    with open('total_path.xyz', 'a') as total_path_file:
+        for folder in subfolders:
+            os.chdir(folder)
+            with open('path.xyz', 'r') as path_file:
+                path_contents = path_file.read()
+            os.chdir(main_dir)
+            total_path_file.write(path_contents)
 
-    os.remove('./movie.jmol')
-    subprocess.Popen("rm *.jpg", shell=True)
-    os.chdir('..') 
+# Use the xyz file to make a bunch of jpgs and then convert that to a gif.
+makeScript()
+subprocess.call(["jmol", "total_path.xyz -x -J movie.jmol"])
+subprocess.call("convert *.jpg " + "combined.gif", shell=True)
 
-#Combine the resulting gifs into a mega gif and clean up
-subprocess.Popen("convert *.gif allIterations.gif", shell=True)
-subprocess.Popen("rm iteration*.gif", shell=True)
+# Clean up
+os.remove('./movie.jmol')
+os.remove('./total_path.xyz')
+subprocess.call("rm *.jpg", shell=True)
